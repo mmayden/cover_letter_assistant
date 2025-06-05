@@ -28,7 +28,7 @@ except:
     FONT_REGULAR = "Helvetica"
     FONT_BOLD = "Helvetica-Bold"
 
-def generate_cover_letter(job_title, company, skills, background, years_experience, career_narrative):
+def generate_cover_letter(job_title, company, skills, background, years_experience, career_narrative, name):
     messages = [
         {
             "role": "system",
@@ -41,8 +41,8 @@ def generate_cover_letter(job_title, company, skills, background, years_experien
 - 3-sentence introduction expressing enthusiasm for the {job_title} role, referencing a specific {company} achievement or value (e.g., innovation, AI solutions), and summarizing your background: {background} with {years_experience} years of experience.
 - 4-sentence body paragraph detailing the skills ({skills}), including a specific, quantifiable example of one skill applied in a project (e.g., developed a Python tool that improved efficiency by 25%), and a personal anecdote tied to your career narrative: {career_narrative}.
 - 3-sentence body paragraph explaining how your experience aligns with {company}'s goals and the role’s responsibilities, emphasizing your career transition and technical contributions.
-- 2-sentence closing inviting an interview and reinforcing commitment to {company}'s mission.
-Use double newlines (\n\n) between paragraphs. Tailor the letter to {company}, ensuring specificity, authenticity, and a formal tone. Exclude placeholders like '[Your Name]'."""
+- 2-sentence closing inviting an interview and reinforcing commitment to {company}'s mission, followed by 'Sincerely,' and the name '{name}' on a new line.
+Use double newlines (\n\n) between paragraphs. Tailor the letter to {company}, ensuring specificity, authenticity, and a formal tone."""
         }
     ]
     headers = {
@@ -81,12 +81,13 @@ def index():
         background = request.form.get('background', 'IT professional transitioning to AI').strip()
         years_experience = request.form.get('years_experience', '5').strip()
         career_narrative = request.form.get('career_narrative', 'Pursuing a transition to AI development through self-taught programming and AI projects').strip()
+        name = request.form.get('name', '').strip()
         if not all([job_title, company, skills]):
             error = "Please fill in all required fields."
         else:
             try:
-                cover_letter = generate_cover_letter(job_title, company, skills, background, years_experience, career_narrative)
-                save_cover_letter(job_title, company, skills, cover_letter, background, years_experience, career_narrative)
+                cover_letter = generate_cover_letter(job_title, company, skills, background, years_experience, career_narrative, name)
+                save_cover_letter(job_title, company, skills, cover_letter, background, years_experience, career_narrative, name)
             except sqlite3.Error as e:
                 logging.error(f"Database error during save: {str(e)}")
                 error = "Failed to save cover letter due to a database issue."
@@ -129,11 +130,11 @@ def download_letter(letter_id):
         y = height - top_margin - 80
         text_object = c.beginText(left_margin, y)
         text_object.setFont(FONT_REGULAR, 12)
-        text_object.setLeading(14.4)  # 1.2x font size
+        text_object.setLeading(14.4)
         text_lines = letter_row[5].split('\n')
         for i, line in enumerate(text_lines):
             line = line.strip()
-            if line:  # Non-empty line
+            if line:
                 words = line.split()
                 current_line = ''
                 for word in words:
@@ -154,7 +155,7 @@ def download_letter(letter_id):
                 if current_line:
                     text_object.textLine(current_line)
                     y -= 14.4
-            else:  # Empty line (paragraph break)
+            else:
                 text_object.textLine('')
                 y -= 14.4
             if y < bottom_margin and (i + 1 < len(text_lines) or current_line):
