@@ -12,7 +12,7 @@ import logging
 logging.basicConfig(level=logging.DEBUG)
 load_dotenv()
 app = Flask(__name__)
-API_KEY = os.getenv("X_API_KEY")
+API_KEY = os.getenv("X_API_KEY")  # Corrected API key variable
 GROK_API_URL = "https://api.x.ai/v1/chat/completions"
 
 # Register Calibri font (if available)
@@ -65,28 +65,28 @@ Use double newlines (\n\n) between paragraphs. Tailor the letter to {company}, e
 def index():
     cover_letter = None
     error = None
+    letters = get_all_cover_letters()
     if request.method == 'POST':
-        job_title = request.form['job_title']
-        company = request.form['company']
-        skills = request.form['skills']
-        background = request.form.get('background', 'IT professional transitioning to AI')
+        job_title = request.form.get('job_title', '').strip()
+        company = request.form.get('company', '').strip()
+        skills = request.form.get('skills', '').strip()
+        background = request.form.get('background', 'IT professional transitioning to AI').strip()
         if not all([job_title, company, skills]):
             error = "Please fill in all required fields."
         else:
             cover_letter = generate_cover_letter(job_title, company, skills, background)
             save_cover_letter(job_title, company, skills, cover_letter, background)
-    letters = get_all_cover_letters()
     return render_template('index.html', cover_letter=cover_letter, letters=letters, error=error)
 
 @app.route('/download/<int:letter_id>')
 def download_letter(letter_id):
     logging.debug(f"Attempting to download letter with ID: {letter_id}")
     letters = get_all_cover_letters()
-    letter = next((l for l in letters if l[0] == letter_id), None)
-    if not letter:
+    letter_row = next((l for l in letters if l[0] == letter_id), None)
+    if not letter_row:
         logging.error(f"Letter with ID {letter_id} not found")
         return "Letter not found", 404
-    logging.debug(f"Found letter: {letter}")
+    logging.debug(f"Found letter: {letter_row}")
     filename = f"cover_letter_{letter_id}.pdf"
     c = canvas.Canvas(filename, pagesize=letter)
     
@@ -95,12 +95,12 @@ def download_letter(letter_id):
     right_margin = 72
     top_margin = 72
     bottom_margin = 72
-    width, height = letter  # This line caused the error
+    width, height = letter  # Page size from reportlab.lib.pagesizes.letter
     usable_height = height - top_margin - bottom_margin
     
     # Header
     c.setFont(FONT_BOLD, 14)
-    c.drawString(left_margin, height - top_margin, f"Cover Letter for {letter[1]} at {letter[2]}")
+    c.drawString(left_margin, height - top_margin, f"Cover Letter for {letter_row[1]} at {letter_row[2]}")
     
     # Body text
     c.setFont(FONT_REGULAR, 12)
@@ -108,7 +108,7 @@ def download_letter(letter_id):
     text_object = c.beginText(left_margin, y)
     text_object.setFont(FONT_REGULAR, 12)
     text_object.setLeading(14.4)  # 1.2x font size for line spacing
-    for line in letter[5].split('\n'):
+    for line in letter_row[5].split('\n'):
         text_object.textLine(line.strip())
         y -= 14.4
         if y < bottom_margin:
@@ -120,7 +120,7 @@ def download_letter(letter_id):
             y = height - top_margin
     c.drawText(text_object)
     c.save()
-    logging.debug(f"PDF generated: {filename}")
+    logging.info(f"PDF generated: {filename}")
     return send_file(filename, as_attachment=True)
 
 if __name__ == '__main__':
