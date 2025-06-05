@@ -35,8 +35,16 @@
                 <input type="text" id="skills" name="skills" required>
             </div>
             <div class="form-group">
-                <label for="background">Background (e.g., years of experience, career focus)</label>
-                <textarea id="background" name="background" placeholder="E.g., 10 years in IT, transitioning to AI"></textarea>
+                <label for="background">Background (e.g., current profession)</label>
+                <textarea id="background" name="background" placeholder="E.g., IT professional transitioning to AI"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="years_experience">Years of Experience</label>
+                <input type="text" id="years_experience" name="years_experience" placeholder="E.g., 10">
+            </div>
+            <div class="form-group">
+                <label for="career_narrative">Career Narrative (e.g., transition story)</label>
+                <textarea id="career_narrative" name="career_narrative" placeholder="E.g., Pursuing a transition to AI through self-taught programming"></textarea>
             </div>
             <button type="submit">Generate Cover Letter</button>
         </form>
@@ -58,6 +66,8 @@
                 <p><strong>Job:</strong> {{ letter[1] }} at {{ letter[2] }}</p>
                 <p><strong>Skills:</strong> {{ letter[3] }}</p>
                 <p><strong>Background:</strong> {{ letter[4] }}</p>
+                <p><strong>Years of Experience:</strong> {{ letter[7] }}</p>
+                <p><strong>Career Narrative:</strong> {{ letter[8] }}</p>
                 <p><strong>Cover Letter:</strong> <pre>{{ letter[5] }}</pre></p>
                 <p><strong>Created:</strong> {{ letter[6] }}</p>
                 <a href="{{ url_for('download_letter', letter_id=letter[0]) }}" class="download-btn">Download PDF</a>
