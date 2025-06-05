@@ -1,10 +1,10 @@
-## Improvements
-- Enhanced output formatting with double newlines between paragraphs, achieved by updating Grok’s prompt and Flask template styling (`white-space: pre-wrap`).
-- Improved content quality to match professional cover letters by refining the prompt to include specific, quantifiable examples and a personal background narrative.
-- Added a 'Background' input field to personalize cover letters, capturing user career context (e.g., years in IT, transitioning to AI).
-- Optimized Grok API parameters (`max_tokens=600`, `temperature=0.7`) for detailed, tailored outputs.
+## Features
+- Generate 200-250 word cover letters using xAI’s Grok API with tailored prompts.
+- Store cover letters in an SQLite database with job title, company, skills, and background.
+- Display previous cover letters with formatted output (newlines preserved).
+- Download cover letters as PDFs using a styled "Download PDF" button, powered by `reportlab`.
 
-## Prompt Engineering
-- Iterated prompts to ensure structured, 200-250 word cover letters with two body paragraphs (skills and company alignment).
-- Emphasized specific, quantifiable examples (e.g., 'improved efficiency by 20%') and avoided clichés for authenticity.
-- Tailored outputs to company achievements and user background, enhancing relevance and professionalism.
+## Recent Improvements
+- Added a "Download PDF" button to the "Previous Cover Letters" section, enabling users to export cover letters as PDF files.
+- Updated database schema and queries to support PDF downloads using cover letter IDs.
+- Enhanced HTML template with styled buttons for a professional user experience.
