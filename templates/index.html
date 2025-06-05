@@ -46,6 +46,10 @@
                 <label for="career_narrative">Career Narrative (e.g., transition story)</label>
                 <textarea id="career_narrative" name="career_narrative" placeholder="E.g., Pursuing a transition to AI through self-taught programming"></textarea>
             </div>
+            <div class="form-group">
+                <label for="name">Your Name</label>
+                <input type="text" id="name" name="name" placeholder="E.g., Michael Mayden">
+            </div>
             <button type="submit">Generate Cover Letter</button>
         </form>
     </div>
@@ -68,6 +72,7 @@
                 <p><strong>Background:</strong> {{ letter[4] }}</p>
                 <p><strong>Years of Experience:</strong> {{ letter[7] }}</p>
                 <p><strong>Career Narrative:</strong> {{ letter[8] }}</p>
+                <p><strong>Name:</strong> {{ letter[9] }}</p>
                 <p><strong>Cover Letter:</strong> <pre>{{ letter[5] }}</pre></p>
                 <p><strong>Created:</strong> {{ letter[6] }}</p>
                 <a href="{{ url_for('download_letter', letter_id=letter[0]) }}" class="download-btn">Download PDF</a>
