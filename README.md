@@ -3,6 +3,7 @@
 - Store cover letters in SQLite with job title, company, skills, background, and timestamp.
 - Display previous cover letters with formatted output and a "Download PDF" button.
 - Export cover letters as professional PDFs with Calibri font, 12pt text, 1-inch margins, and headers.
+- The app handles database errors gracefully, displaying user-friendly messages if `cover_letters.db` is missing.
 
 ## Recent Improvements
 - Fixed `sqlite3.OperationalError: no such table: cover_letters` by initializing the database before queries.
