@@ -1,14 +1,47 @@
 from flask import Flask, request, render_template
-from transformers import pipeline
+import requests
+from dotenv import load_dotenv
+import os
 from database import init_db, save_cover_letter, get_all_cover_letters
 
+load_dotenv()
 app = Flask(__name__)
-generator = pipeline('text2text-generation', model='google/flan-t5-base')
+API_KEY = os.getenv("X_API_KEY")
+GROK_API_URL = "https://api.x.ai/v1/chat/completions"
 
 def generate_cover_letter(job_title, company, skills):
-    prompt = f"""Write a professional 200-word cover letter for a {job_title} role at {company}, highlighting the following skills: {skills}. Ensure the tone is formal, enthusiastic, and tailored to the job and company."""
-    result = generator(prompt, max_length=300, num_return_sequences=1)
-    return result[0]['generated_text']
+    messages = [
+        {
+            "role": "system",
+            "content": "You are an expert in writing professional cover letters, specializing in clear, tailored, and enthusiastic responses."
+        },
+        {
+            "role": "user",
+            "content": f"""Create a 150-200 word cover letter for a {job_title} position at {company}. Structure it as follows:
+- Begin with 'Dear Hiring Manager,'.
+- Write a 2-sentence introduction expressing enthusiasm for the {job_title} role and a specific aspect of {company}'s mission or achievements.
+- Write a 3-sentence body highlighting the skills ({skills}), including one concrete example of applying a skill in a project or job.
+- End with a 2-sentence closing expressing eagerness to contribute and inviting an interview.
+Ensure a formal, enthusiastic tone, avoid generic phrases like 'passionate' or 'dynamic,' and tailor the content to {company}. Exclude placeholders like '[Your Name]'."""
+        }
+    ]
+    headers = {
+        "Authorization": f"Bearer {API_KEY}",
+        "Content-Type": "application/json"
+    }
+    payload = {
+        "model": "grok-2-latest",  # Changed to a confirmed model
+        "messages": messages,
+        "max_tokens": 400,
+        "temperature": 0.7,
+        "top_p": 0.9
+    }
+    try:
+        response = requests.post(GROK_API_URL, json=payload, headers=headers)
+        response.raise_for_status()
+        return response.json()["choices"][0]["message"]["content"].strip()
+    except requests.RequestException as e:
+        return f"Error generating cover letter: {str(e)}, Response: {response.text}"
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
