@@ -5,6 +5,6 @@
 - Export cover letters as professional PDFs with Calibri font, 12pt text, 1-inch margins, and headers.
 
 ## Recent Improvements
-- Fixed automatic cover letter generation on page load by restricting generation to POST requests with valid form inputs.
-- Corrected API key variable to `X_API_KEY` for proper environment variable access.
-- Enhanced PDF downloads with Calibri font, 14pt bold headers, 12pt body text, and 1-inch margins for a professional layout.
+- Fixed `sqlite3.OperationalError: no such table: cover_letters` by initializing the database before queries.
+- Added error handling to display user-friendly messages for database issues (e.g., missing database).
+- Corrected API key variable to `X_API_KEY` and prevented unwanted cover letter generation on page load.
