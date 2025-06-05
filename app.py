@@ -1,8 +1,10 @@
-from flask import Flask, request, render_template
+from flask import Flask, request, render_template, send_file
 import requests
 from dotenv import load_dotenv
 import os
 from database import init_db, save_cover_letter, get_all_cover_letters
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
 
 load_dotenv()
 app = Flask(__name__)
@@ -56,6 +58,21 @@ def index():
         save_cover_letter(job_title, company, skills, cover_letter)
     letters = get_all_cover_letters()
     return render_template('index.html', cover_letter=cover_letter, letters=letters)
+
+@app.route('/download/<int:letter_id>')
+def download_letter(letter_id):
+    letters = get_all_cover_letters()
+    letter = next((l for l in letters if l[0] == letter_id), None)
+    if not letter:
+        return "Letter not found", 404
+    filename = f"cover_letter_{letter_id}.pdf"
+    c = canvas.Canvas(filename, pagesize=letter)
+    y = 750
+    for line in letter[4].split('\n'):
+        c.drawString(100, y, line)
+        y -= 15
+    c.save()
+    return send_file(filename, as_attachment=True)
 
 if __name__ == '__main__':
     init_db()

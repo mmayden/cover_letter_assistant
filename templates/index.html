@@ -14,6 +14,8 @@
         .history { margin-top: 30px; }
         .history-item { margin-bottom: 15px; padding: 10px; border: 1px solid #eee; }
         .error { color: red; }
+        .download-btn { display: inline-block; padding: 8px 15px; background-color: #007BFF; color: white; text-decoration: none; border-radius: 4px; margin-top: 10px; }
+        .download-btn:hover { background-color: #0056b3; }
     </style>
 </head>
 <body>
@@ -50,10 +52,12 @@
         <h2>Previous Cover Letters</h2>
         {% for letter in letters %}
             <div class="history-item">
-                <p><strong>Job:</strong> {{ letter[0] }} at {{ letter[1] }}</p>
-                <p><strong>Skills:</strong> {{ letter[2] }}</p>
-                <p><strong>Cover Letter:</strong> <pre>{{ letter[3] }}</pre></p>
-                <p><strong>Created:</strong> {{ letter[4] }}</p>
+                <p><strong>Job:</strong> {{ letter[1] }} at {{ letter[2] }}</p>
+                <p><strong>Skills:</strong> {{ letter[3] }}</p>
+                <p><strong>Background:</strong> {{ letter[4] }}</p>
+                <p><strong>Cover Letter:</strong> <pre>{{ letter[5] }}</pre></p>
+                <p><strong>Created:</strong> {{ letter[6] }}</p>
+                <a href="{{ url_for('download_letter', letter_id=letter[0]) }}" class="download-btn">Download PDF</a>
             </div>
         {% endfor %}
     </div>

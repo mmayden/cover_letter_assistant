@@ -26,7 +26,7 @@ def save_cover_letter(job_title, company, skills, cover_letter, background=''):
 def get_all_cover_letters():
     conn = sqlite3.connect('cover_letters.db')
     c = conn.cursor()
-    c.execute('SELECT job_title, company, skills, background, cover_letter, created_at FROM cover_letters')
+    c.execute('SELECT id, job_title, company, skills, background, cover_letter, created_at FROM cover_letters')
     letters = c.fetchall()
     conn.close()
     return letters
