@@ -16,6 +16,7 @@ def init_db():
     conn.close()
 
 def save_cover_letter(job_title, company, skills, cover_letter, background=''):
+    init_db()  # Ensure table exists before insert
     conn = sqlite3.connect('cover_letters.db')
     c = conn.cursor()
     c.execute('INSERT INTO cover_letters (job_title, company, skills, background, cover_letter, created_at) VALUES (?, ?, ?, ?, ?, ?)',
@@ -24,6 +25,7 @@ def save_cover_letter(job_title, company, skills, cover_letter, background=''):
     conn.close()
 
 def get_all_cover_letters():
+    init_db()  # Ensure table exists before query
     conn = sqlite3.connect('cover_letters.db')
     c = conn.cursor()
     c.execute('SELECT id, job_title, company, skills, background, cover_letter, created_at FROM cover_letters')
