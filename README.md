@@ -8,3 +8,6 @@
 - Fixed `sqlite3.OperationalError: no such table: cover_letters` by initializing the database before queries.
 - Added error handling to display user-friendly messages for database issues (e.g., missing database).
 - Corrected API key variable to `X_API_KEY` and prevented unwanted cover letter generation on page load.
+
+## Screenshots
+![Web Interface](resources/interface.png)
