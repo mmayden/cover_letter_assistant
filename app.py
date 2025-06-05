@@ -5,6 +5,8 @@ import os
 from database import init_db, save_cover_letter, get_all_cover_letters
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
 import logging
 
 logging.basicConfig(level=logging.DEBUG)
@@ -12,6 +14,17 @@ load_dotenv()
 app = Flask(__name__)
 API_KEY = os.getenv("X_API_KEY")
 GROK_API_URL = "https://api.x.ai/v1/chat/completions"
+
+# Register Calibri font (if available)
+try:
+    pdfmetrics.registerFont(TTFont("Calibri", "C:/Windows/Fonts/calibri.ttf"))
+    pdfmetrics.registerFont(TTFont("Calibri-Bold", "C:/Windows/Fonts/calibrib.ttf"))
+    FONT_REGULAR = "Calibri"
+    FONT_BOLD = "Calibri-Bold"
+except:
+    logging.warning("Calibri font not found, using Arial as fallback")
+    FONT_REGULAR = "Helvetica"
+    FONT_BOLD = "Helvetica-Bold"
 
 def generate_cover_letter(job_title, company, skills, background):
     messages = [
@@ -76,18 +89,35 @@ def download_letter(letter_id):
     logging.debug(f"Found letter: {letter}")
     filename = f"cover_letter_{letter_id}.pdf"
     c = canvas.Canvas(filename, pagesize=letter)
-    c.setFont("Helvetica", 10)
-    y = 750
-    text_object = c.beginText(100, y)
-    text_object.setFont("Helvetica", 10)
+    
+    # Set margins (1 inch = 72 points)
+    left_margin = 72
+    right_margin = 72
+    top_margin = 72
+    bottom_margin = 72
+    width, height = letter  # This line caused the error
+    usable_height = height - top_margin - bottom_margin
+    
+    # Header
+    c.setFont(FONT_BOLD, 14)
+    c.drawString(left_margin, height - top_margin, f"Cover Letter for {letter[1]} at {letter[2]}")
+    
+    # Body text
+    c.setFont(FONT_REGULAR, 12)
+    y = height - top_margin - 40  # Start below header
+    text_object = c.beginText(left_margin, y)
+    text_object.setFont(FONT_REGULAR, 12)
+    text_object.setLeading(14.4)  # 1.2x font size for line spacing
     for line in letter[5].split('\n'):
-        text_object.textLine(line)
-        y -= 15
-        if y < 50:
+        text_object.textLine(line.strip())
+        y -= 14.4
+        if y < bottom_margin:
             c.drawText(text_object)
             c.showPage()
-            text_object = c.beginText(100, 750)
-            y = 750
+            c.setFont(FONT_REGULAR, 12)
+            text_object = c.beginText(left_margin, height - top_margin)
+            text_object.setLeading(14.4)
+            y = height - top_margin
     c.drawText(text_object)
     c.save()
     logging.debug(f"PDF generated: {filename}")
