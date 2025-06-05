@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AI Cover Letter Assistant</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .form-container { max-width: 600px; margin-bottom: 20px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; }
+        input, textarea { width: 100%; padding: 8px; }
+        button { padding: 10px 20px; background-color: #4CAF50; color: white; border: none; cursor: pointer; }
+        button:hover { background-color: #45a049; }
+        .result { margin-top: 20px; padding: 15px; border: 1px solid #ddd; }
+        .history { margin-top: 30px; }
+        .history-item { margin-bottom: 15px; padding: 10px; border: 1px solid #eee; }
+    </style>
+</head>
+<body>
+    <h1>AI Cover Letter Assistant</h1>
+    <div class="form-container">
+        <form method="POST">
+            <div class="form-group">
+                <label for="job_title">Job Title</label>
+                <input type="text" id="job_title" name="job_title" required>
+            </div>
+            <div class="form-group">
+                <label for="company">Company Name</label>
+                <input type="text" id="company" name="company" required>
+            </div>
+            <div class="form-group">
+                <label for="skills">Skills (comma-separated)</label>
+                <input type="text" id="skills" name="skills" required>
+            </div>
+            <button type="submit">Generate Cover Letter</button>
+        </form>
+    </div>
+    {% if cover_letter %}
+        <div class="result">
+            <h2>Generated Cover Letter</h2>
+            <p>{{ cover_letter }}</p>
+        </div>
+    {% endif %}
+    <div class="history">
+        <h2>Previous Cover Letters</h2>
+        {% for letter in letters %}
+            <div class="history-item">
+                <p><strong>Job:</strong> {{ letter[0] }} at {{ letter[1] }}</p>
+                <p><strong>Skills:</strong> {{ letter[2] }}</p>
+                <p><strong>Cover Letter:</strong> {{ letter[3] }}</p>
+                <p><strong>Created:</strong> {{ letter[4] }}</p>
+            </div>
+        {% endfor %}
+    </div>
+</body>
+</html>
