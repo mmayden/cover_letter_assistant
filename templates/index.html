@@ -10,9 +10,10 @@
         input, textarea { width: 100%; padding: 8px; }
         button { padding: 10px 20px; background-color: #4CAF50; color: white; border: none; cursor: pointer; }
         button:hover { background-color: #45a049; }
-        .result { margin-top: 20px; padding: 15px; border: 1px solid #ddd; }
+        .result { margin-top: 20px; padding: 15px; border: 1px solid #ddd; white-space: pre-wrap; }
         .history { margin-top: 30px; }
         .history-item { margin-bottom: 15px; padding: 10px; border: 1px solid #eee; }
+        .error { color: red; }
     </style>
 </head>
 <body>
@@ -31,14 +32,19 @@
                 <label for="skills">Skills (comma-separated)</label>
                 <input type="text" id="skills" name="skills" required>
             </div>
+            <div class="form-group">
+                <label for="background">Background (e.g., years of experience, career focus)</label>
+                <textarea id="background" name="background" placeholder="E.g., 10 years in IT, transitioning to AI"></textarea>
+            </div>
             <button type="submit">Generate Cover Letter</button>
         </form>
     </div>
     {% if cover_letter %}
-        <div class="result">
-            <h2>Generated Cover Letter</h2>
-            <p>{{ cover_letter }}</p>
-        </div>
+        {% if cover_letter.startswith('Error') %}
+            <div class="error">{{ cover_letter }}</div>
+        {% else %}
+            <div class="result">{{ cover_letter }}</div>
+        {% endif %}
     {% endif %}
     <div class="history">
         <h2>Previous Cover Letters</h2>
@@ -46,7 +52,7 @@
             <div class="history-item">
                 <p><strong>Job:</strong> {{ letter[0] }} at {{ letter[1] }}</p>
                 <p><strong>Skills:</strong> {{ letter[2] }}</p>
-                <p><strong>Cover Letter:</strong> {{ letter[3] }}</p>
+                <p><strong>Cover Letter:</strong> <pre>{{ letter[3] }}</pre></p>
                 <p><strong>Created:</strong> {{ letter[4] }}</p>
             </div>
         {% endfor %}

@@ -9,20 +9,21 @@ app = Flask(__name__)
 API_KEY = os.getenv("X_API_KEY")
 GROK_API_URL = "https://api.x.ai/v1/chat/completions"
 
-def generate_cover_letter(job_title, company, skills):
+def generate_cover_letter(job_title, company, skills, background):
     messages = [
         {
             "role": "system",
-            "content": "You are an expert in writing professional cover letters, specializing in clear, tailored, and enthusiastic responses."
+            "content": """You are an expert cover letter writer with a knack for crafting compelling, tailored narratives. Format outputs with double newlines (\n\n) between paragraphs. Ensure a formal, enthusiastic tone, avoiding generic phrases like 'passionate,' 'dynamic,' or 'fast learner.' Include specific, quantifiable examples when describing skills, and tailor content to the company's mission or achievements."""
         },
         {
             "role": "user",
-            "content": f"""Create a 150-200 word cover letter for a {job_title} position at {company}. Structure it as follows:
-- Begin with 'Dear Hiring Manager,'.
-- Write a 2-sentence introduction expressing enthusiasm for the {job_title} role and a specific aspect of {company}'s mission or achievements.
-- Write a 3-sentence body highlighting the skills ({skills}), including one concrete example of applying a skill in a project or job.
-- End with a 2-sentence closing expressing eagerness to contribute and inviting an interview.
-Ensure a formal, enthusiastic tone, avoid generic phrases like 'passionate' or 'dynamic,' and tailor the content to {company}. Exclude placeholders like '[Your Name]'."""
+            "content": f"""Write a 200-250 word cover letter for a {job_title} position at {company}, structured as follows:
+- Start with 'Dear Hiring Manager,'.
+- Write a 3-sentence introduction expressing enthusiasm for the {job_title} role, referencing a specific {company} achievement or value (e.g., a recent product launch or innovation focus), and summarizing your background: {background}.
+- Write a 4-sentence body paragraph detailing the skills ({skills}), including a specific, quantifiable example of one skill applied in a project or job (e.g., developed a tool that improved efficiency by 20%).
+- Write a 3-sentence body paragraph explaining how your technical or collaborative experience aligns with {company}'s goals and the role’s responsibilities (e.g., integrating AI systems or working with developers).
+- End with a 2-sentence closing inviting an interview and reinforcing commitment to {company}'s mission.
+Use double newlines (\n\n) between paragraphs. Tailor the letter to {company}, ensuring specificity and authenticity. Exclude placeholders like '[Your Name]'."""
         }
     ]
     headers = {
@@ -30,9 +31,9 @@ Ensure a formal, enthusiastic tone, avoid generic phrases like 'passionate' or '
         "Content-Type": "application/json"
     }
     payload = {
-        "model": "grok-2-latest",  # Changed to a confirmed model
+        "model": "grok-2-latest",
         "messages": messages,
-        "max_tokens": 400,
+        "max_tokens": 600,
         "temperature": 0.7,
         "top_p": 0.9
     }
@@ -50,7 +51,8 @@ def index():
         job_title = request.form['job_title']
         company = request.form['company']
         skills = request.form['skills']
-        cover_letter = generate_cover_letter(job_title, company, skills)
+        background = request.form.get('background', 'IT professional transitioning to AI')
+        cover_letter = generate_cover_letter(job_title, company, skills, background)
         save_cover_letter(job_title, company, skills, cover_letter)
     letters = get_all_cover_letters()
     return render_template('index.html', cover_letter=cover_letter, letters=letters)
