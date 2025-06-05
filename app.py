@@ -8,11 +8,12 @@ from reportlab.pdfgen import canvas
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 import logging
+import sqlite3
 
 logging.basicConfig(level=logging.DEBUG)
 load_dotenv()
 app = Flask(__name__)
-API_KEY = os.getenv("X_API_KEY")  # Corrected API key variable
+API_KEY = os.getenv("X_API_KEY")  # Correct API key variable
 GROK_API_URL = "https://api.x.ai/v1/chat/completions"
 
 # Register Calibri font (if available)
@@ -65,7 +66,13 @@ Use double newlines (\n\n) between paragraphs. Tailor the letter to {company}, e
 def index():
     cover_letter = None
     error = None
-    letters = get_all_cover_letters()
+    try:
+        letters = get_all_cover_letters()
+    except sqlite3.Error as e:
+        logging.error(f"Database error: {str(e)}")
+        letters = []
+        error = "Unable to load previous cover letters due to a database issue."
+    
     if request.method == 'POST':
         job_title = request.form.get('job_title', '').strip()
         company = request.form.get('company', '').strip()
@@ -74,54 +81,63 @@ def index():
         if not all([job_title, company, skills]):
             error = "Please fill in all required fields."
         else:
-            cover_letter = generate_cover_letter(job_title, company, skills, background)
-            save_cover_letter(job_title, company, skills, cover_letter, background)
+            try:
+                cover_letter = generate_cover_letter(job_title, company, skills, background)
+                save_cover_letter(job_title, company, skills, cover_letter, background)
+            except sqlite3.Error as e:
+                logging.error(f"Database error during save: {str(e)}")
+                error = "Failed to save cover letter due to a database issue."
+    
     return render_template('index.html', cover_letter=cover_letter, letters=letters, error=error)
 
 @app.route('/download/<int:letter_id>')
 def download_letter(letter_id):
     logging.debug(f"Attempting to download letter with ID: {letter_id}")
-    letters = get_all_cover_letters()
-    letter_row = next((l for l in letters if l[0] == letter_id), None)
-    if not letter_row:
-        logging.error(f"Letter with ID {letter_id} not found")
-        return "Letter not found", 404
-    logging.debug(f"Found letter: {letter_row}")
-    filename = f"cover_letter_{letter_id}.pdf"
-    c = canvas.Canvas(filename, pagesize=letter)
-    
-    # Set margins (1 inch = 72 points)
-    left_margin = 72
-    right_margin = 72
-    top_margin = 72
-    bottom_margin = 72
-    width, height = letter  # Page size from reportlab.lib.pagesizes.letter
-    usable_height = height - top_margin - bottom_margin
-    
-    # Header
-    c.setFont(FONT_BOLD, 14)
-    c.drawString(left_margin, height - top_margin, f"Cover Letter for {letter_row[1]} at {letter_row[2]}")
-    
-    # Body text
-    c.setFont(FONT_REGULAR, 12)
-    y = height - top_margin - 40  # Start below header
-    text_object = c.beginText(left_margin, y)
-    text_object.setFont(FONT_REGULAR, 12)
-    text_object.setLeading(14.4)  # 1.2x font size for line spacing
-    for line in letter_row[5].split('\n'):
-        text_object.textLine(line.strip())
-        y -= 14.4
-        if y < bottom_margin:
-            c.drawText(text_object)
-            c.showPage()
-            c.setFont(FONT_REGULAR, 12)
-            text_object = c.beginText(left_margin, height - top_margin)
-            text_object.setLeading(14.4)
-            y = height - top_margin
-    c.drawText(text_object)
-    c.save()
-    logging.info(f"PDF generated: {filename}")
-    return send_file(filename, as_attachment=True)
+    try:
+        letters = get_all_cover_letters()
+        letter_row = next((l for l in letters if l[0] == letter_id), None)
+        if not letter_row:
+            logging.error(f"Letter with ID {letter_id} not found")
+            return "Letter not found", 404
+        logging.debug(f"Found letter: {letter_row}")
+        filename = f"cover_letter_{letter_id}.pdf"
+        c = canvas.Canvas(filename, pagesize=letter)
+        
+        # Set margins (1 inch = 72 points)
+        left_margin = 72
+        right_margin = 72
+        top_margin = 72
+        bottom_margin = 72
+        width, height = letter  # Page size from reportlab.lib.pagesizes.letter
+        usable_height = height - top_margin - bottom_margin
+        
+        # Header
+        c.setFont(FONT_BOLD, 14)
+        c.drawString(left_margin, height - top_margin, f"Cover Letter for {letter_row[1]} at {letter_row[2]}")
+        
+        # Body text
+        c.setFont(FONT_REGULAR, 12)
+        y = height - top_margin - 40  # Start below header
+        text_object = c.beginText(left_margin, y)
+        text_object.setFont(FONT_REGULAR, 12)
+        text_object.setLeading(14.4)  # 1.2x font size for line spacing
+        for line in letter_row[5].split('\n'):
+            text_object.textLine(line.strip())
+            y -= 14.4
+            if y < bottom_margin:
+                c.drawText(text_object)
+                c.showPage()
+                c.setFont(FONT_REGULAR, 12)
+                text_object = c.beginText(left_margin, height - top_margin)
+                text_object.setLeading(14.4)
+                y = height - top_margin
+        c.drawText(text_object)
+        c.save()
+        logging.info(f"PDF generated: {filename}")
+        return send_file(filename, as_attachment=True)
+    except sqlite3.Error as e:
+        logging.error(f"Database error during download: {str(e)}")
+        return "Unable to generate PDF due to a database issue.", 500
 
 if __name__ == '__main__':
     init_db()

@@ -41,6 +41,9 @@
             <button type="submit">Generate Cover Letter</button>
         </form>
     </div>
+    {% if error %}
+        <div class="error">{{ error }}</div>
+    {% endif %}
     {% if cover_letter %}
         {% if cover_letter.startswith('Error') %}
             <div class="error">{{ cover_letter }}</div>
